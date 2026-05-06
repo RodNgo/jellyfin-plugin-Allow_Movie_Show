@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.AllowMovieShow.Services;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -63,16 +64,79 @@ public class AllowMovieShowController : ControllerBase
                 continue;
             }
 
-            results.Add(new ItemLookupResult
-            {
-                Id = item.Id.ToString("N"),
-                Name = item.Name,
-                Type = type
-            });
+            results.Add(BuildLookupResult(item, type));
         }
 
         _logger.LogDebug("Resolved {Count} item(s).", results.Count);
         return Ok(results);
+    }
+
+    [HttpPost("ResolveItemMetadata")]
+    public ActionResult<IEnumerable<ItemLookupResult>> ResolveItemMetadata([FromBody] ResolveItemIdsRequest? body)
+    {
+        if (body?.Ids is null || body.Ids.Count == 0)
+        {
+            return Ok(Array.Empty<ItemLookupResult>());
+        }
+
+        var results = new List<ItemLookupResult>(body.Ids.Count);
+        foreach (var id in body.Ids)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                continue;
+            }
+
+            if (!TryParseItemId(id, out var guid))
+            {
+                continue;
+            }
+
+            var item = _libraryManager.GetItemById(guid);
+            if (item is null)
+            {
+                continue;
+            }
+
+            var type = item.GetType().Name;
+            if (!type.Equals("Movie", StringComparison.OrdinalIgnoreCase) && !type.Equals("Series", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            results.Add(BuildLookupResult(item, type));
+        }
+
+        return Ok(results);
+    }
+
+    private ItemLookupResult BuildLookupResult(BaseItem item, string type)
+    {
+        return new ItemLookupResult
+        {
+            Id = item.Id.ToString("N"),
+            Name = item.Name ?? string.Empty,
+            Type = type,
+            LibraryName = GetLibraryDisplayName(item)
+        };
+    }
+
+    private static string GetLibraryDisplayName(BaseItem item)
+    {
+        var parent = item.GetParent();
+        for (var depth = 0; parent is not null && depth < 16; depth++)
+        {
+            var typeName = parent.GetType().Name;
+            if (typeName.Equals("CollectionFolder", StringComparison.OrdinalIgnoreCase)
+                || typeName.Equals("UserView", StringComparison.OrdinalIgnoreCase))
+            {
+                return parent.Name ?? string.Empty;
+            }
+
+            parent = parent.GetParent();
+        }
+
+        return string.Empty;
     }
 
     private static bool TryParseItemId(string id, out Guid guid)
@@ -100,4 +164,11 @@ public sealed class ItemLookupResult
     public string Name { get; set; } = string.Empty;
 
     public string Type { get; set; } = string.Empty;
+
+    public string LibraryName { get; set; } = string.Empty;
+}
+
+public sealed class ResolveItemIdsRequest
+{
+    public List<string> Ids { get; set; } = new();
 }

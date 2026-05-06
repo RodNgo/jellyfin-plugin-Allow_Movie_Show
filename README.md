@@ -7,9 +7,10 @@ This plugin is inspired by the project structure used in [jellyfin-plugin-Telegr
 ## What this plugin does
 
 - Adds a plugin configuration page in Jellyfin admin dashboard.
-- Lets admin choose a user, search Movie/Series, and mark exact items to hide.
+- Lets admin choose a user, browse **Movies** and **Shows** in **paged lists** (150 items per page for large libraries), and tick items to hide.
+- Shows **library / collection name** next to each title (and in the **Hidden items** section) where Jellyfin exposes a `CollectionFolder` or `UserView` parent.
 - Keeps folder permissions as-is, then blocks selected items per user via Jellyfin tag policy (`BlockedTags`).
-- Supports per-user hidden list (`HiddenItemIds`) so each user can have a different visible catalog.
+- Supports per-user hidden list (`HiddenItemIds` + `HiddenItems` metadata) so each user can have a different visible catalog.
 - Supports `Apply now` so rules can be applied immediately after Save without Jellyfin restart.
 
 ## Install plugin (developer mode)
@@ -35,7 +36,7 @@ plugins/
 1. Open `Dashboard -> Plugins -> Allow Movie Show`.
 2. Enable plugin.
 3. Select a user.
-4. Search Movie/Series and add items to hidden list.
+4. Use **Previous page / Next page** under Movies and Shows to browse; tick items to hide. Use **Hidden items** to tick items you want to show again.
 5. Save (plugin will auto-call `Apply now`).
 6. Optional: click `Apply now` manually if you want to re-apply immediately.
 

@@ -27,13 +27,31 @@
                 <div class="sectionTitleContainer flex align-items-center" style="margin-top: 1.5em;">
                     <h3>Movies</h3>
                 </div>
-                <div class="fieldDescription">Tick movie items that should be hidden for selected user.</div>
+                <div class="fieldDescription">Tick movie items that should be hidden for selected user. Library name is shown after each title. Large libraries load in pages.</div>
+                <div id="moviePager" style="display:flex;flex-wrap:wrap;gap:0.75em;align-items:center;margin-top:0.6em;">
+                    <button id="moviePrevPage" type="button" is="emby-button" class="raised emby-button">
+                        <span>Previous page</span>
+                    </button>
+                    <span id="moviePageInfo" class="fieldDescription" style="margin:0;"></span>
+                    <button id="movieNextPage" type="button" is="emby-button" class="raised emby-button">
+                        <span>Next page</span>
+                    </button>
+                </div>
                 <div id="movieItemsContainer" style="margin-top: 0.8em;"></div>
 
                 <div class="sectionTitleContainer flex align-items-center" style="margin-top: 1.5em;">
                     <h3>Shows</h3>
                 </div>
-                <div class="fieldDescription">Tick show items that should be hidden for selected user.</div>
+                <div class="fieldDescription">Tick show items that should be hidden for selected user. Library name is shown after each title. Large libraries load in pages.</div>
+                <div id="showPager" style="display:flex;flex-wrap:wrap;gap:0.75em;align-items:center;margin-top:0.6em;">
+                    <button id="showPrevPage" type="button" is="emby-button" class="raised emby-button">
+                        <span>Previous page</span>
+                    </button>
+                    <span id="showPageInfo" class="fieldDescription" style="margin:0;"></span>
+                    <button id="showNextPage" type="button" is="emby-button" class="raised emby-button">
+                        <span>Next page</span>
+                    </button>
+                </div>
                 <div id="showItemsContainer" style="margin-top: 0.8em;"></div>
 
                 <div>

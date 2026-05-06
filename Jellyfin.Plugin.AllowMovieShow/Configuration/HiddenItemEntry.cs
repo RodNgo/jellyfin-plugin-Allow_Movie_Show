@@ -7,4 +7,6 @@ public sealed class HiddenItemEntry
     public string Name { get; set; } = string.Empty;
 
     public string ItemType { get; set; } = string.Empty;
+
+    public string LibraryName { get; set; } = string.Empty;
 }
