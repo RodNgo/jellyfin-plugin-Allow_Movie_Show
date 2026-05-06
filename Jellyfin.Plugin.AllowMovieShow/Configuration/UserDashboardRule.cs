@@ -7,4 +7,6 @@ public sealed class UserDashboardRule
     public string UserName { get; set; } = string.Empty;
 
     public string[] HiddenItemIds { get; set; } = [];
+
+    public HiddenItemEntry[] HiddenItems { get; set; } = [];
 }

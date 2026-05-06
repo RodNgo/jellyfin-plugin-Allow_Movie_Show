@@ -44,8 +44,16 @@ export default function (view) {
                 document.querySelector('#EnablePlugin').checked = config.EnablePlugin;
                 const userConfig = config.UserRules.find(x => x.UserId === AllowMovieShowConfig.user.getSelectedUserId());
                 const hiddenItemIds = userConfig?.HiddenItemIds || [];
-
-                AllowMovieShowConfig.selectedHiddenItems = await AllowMovieShowConfig.resolveHiddenItems(hiddenItemIds);
+                const hiddenItems = userConfig?.HiddenItems || [];
+                if (hiddenItems.length > 0) {
+                    AllowMovieShowConfig.selectedHiddenItems = hiddenItems.map(x => ({
+                        Id: x.ItemId,
+                        Name: x.Name || `Unknown item (${x.ItemId})`,
+                        Type: x.ItemType || 'Unknown'
+                    }));
+                } else {
+                    AllowMovieShowConfig.selectedHiddenItems = await AllowMovieShowConfig.resolveHiddenItems(hiddenItemIds);
+                }
                 AllowMovieShowConfig.selectedToUnhideItemIds = [];
                 await AllowMovieShowConfig.loadAllMedia();
                 AllowMovieShowConfig.renderHiddenItemsSection();
@@ -213,17 +221,26 @@ export default function (view) {
                 const selectedUserId = AllowMovieShowConfig.user.getSelectedUserId();
                 const selectedUserName = AllowMovieShowConfig.user.getSelectedUserName();
                 const userConfig = config.UserRules.find(x => x.UserId === selectedUserId);
-                const hiddenItemIds = AllowMovieShowConfig.selectedHiddenItems
-                    .map(x => x.Id)
-                    .filter(id => !AllowMovieShowConfig.selectedToUnhideItemIds.includes(id));
+                const hiddenItems = AllowMovieShowConfig.selectedHiddenItems
+                    .filter(item => !AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id))
+                    .map(item => ({
+                        ItemId: item.Id,
+                        Name: item.Name,
+                        ItemType: item.Type
+                    }));
+                const hiddenItemIds = hiddenItems
+                    .map(x => x.ItemId)
+                    .filter(id => !!id);
 
                 if (userConfig) {
                     userConfig.HiddenItemIds = hiddenItemIds;
+                    userConfig.HiddenItems = hiddenItems;
                 } else {
                     config.UserRules.push({
                         UserId: selectedUserId,
                         UserName: selectedUserName,
-                        HiddenItemIds: hiddenItemIds
+                        HiddenItemIds: hiddenItemIds,
+                        HiddenItems: hiddenItems
                     });
                 }
 

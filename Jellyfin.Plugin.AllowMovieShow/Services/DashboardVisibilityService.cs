@@ -54,6 +54,7 @@ public sealed class DashboardVisibilityService
             }
 
             var normalizedHiddenIds = rule.HiddenItemIds
+                .Concat(rule.HiddenItems.Select(x => x.ItemId))
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
