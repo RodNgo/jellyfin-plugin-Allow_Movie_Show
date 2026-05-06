@@ -8,12 +8,12 @@
     "category": "General",
     "versions": [
       {
-        "version": "1.0.1.1",
-        "changelog": "Package release as zip for Jellyfin catalog compatibility and keep item-level per-user visibility updates.",
+        "version": "1.0.2.0",
+        "changelog": "Revamp plugin config UI into separate Movies and Shows sections with full media list and checkbox-based hide selection.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/RodNgo/jellyfin-plugin-Allow_Movie_Show/releases/download/v1.0.1.1/Jellyfin.Plugin.AllowMovieShow_1.0.1.1.zip",
-        "checksum": "07414fe2247edbef9294a069a8b1d9f8",
-        "timestamp": "2026-05-06T08:18:00Z"
+        "sourceUrl": "https://github.com/RodNgo/jellyfin-plugin-Allow_Movie_Show/releases/download/v1.0.2.0/Jellyfin.Plugin.AllowMovieShow_1.0.2.0.zip",
+        "checksum": "035ab22e161190f56fcba99be26528ac",
+        "timestamp": "2026-05-06T08:24:00Z"
       }
     ]
   }

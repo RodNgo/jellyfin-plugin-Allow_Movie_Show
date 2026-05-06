@@ -2,7 +2,8 @@ export default function (view) {
     const AllowMovieShowConfig = {
         pluginUniqueId: '4ce5e570-aeba-4218-a0f8-741cd5701ec6',
         selectedHiddenItems: [],
-        searchResults: [],
+        allMovies: [],
+        allShows: [],
 
         user: {
             loadUsers: async function () {
@@ -31,7 +32,6 @@ export default function (view) {
             await this.loadConfig();
 
             document.getElementById('userToConfigure').addEventListener('change', this.loadConfig);
-            document.getElementById('searchButton').addEventListener('click', this.searchItems);
             document.getElementById('saveButton').addEventListener('click', this.saveConfig);
             document.getElementById('applyNowButton').addEventListener('click', this.applyNow);
         },
@@ -45,59 +45,59 @@ export default function (view) {
                 const hiddenItemIds = userConfig?.HiddenItemIds || [];
 
                 AllowMovieShowConfig.selectedHiddenItems = await AllowMovieShowConfig.resolveHiddenItems(hiddenItemIds);
-
-                AllowMovieShowConfig.renderSelectedItems();
+                await AllowMovieShowConfig.loadAllMedia();
+                AllowMovieShowConfig.renderAllMediaSections();
             } finally {
                 Dashboard.hideLoadingMsg();
             }
         },
 
-        searchItems: function (e = null) {
-            if (e) {
-                e.preventDefault();
-            }
+        loadAllMedia: async function () {
+            const userId = AllowMovieShowConfig.user.getSelectedUserId();
+            const [movieResult, showResult] = await Promise.all([
+                ApiClient.getItems(userId, {
+                    Recursive: true,
+                    IncludeItemTypes: 'Movie',
+                    SortBy: 'SortName',
+                    SortOrder: 'Ascending',
+                    Limit: 10000
+                }),
+                ApiClient.getItems(userId, {
+                    Recursive: true,
+                    IncludeItemTypes: 'Series',
+                    SortBy: 'SortName',
+                    SortOrder: 'Ascending',
+                    Limit: 10000
+                })
+            ]);
 
-            const keyword = document.getElementById('searchKeyword').value;
-            if (!keyword || !keyword.trim()) {
-                AllowMovieShowConfig.searchResults = [];
-                AllowMovieShowConfig.renderSearchResults();
-                return;
-            }
-
-            Dashboard.showLoadingMsg();
-            ApiClient.getItems(AllowMovieShowConfig.user.getSelectedUserId(), {
-                SearchTerm: keyword.trim(),
-                Recursive: true,
-                IncludeItemTypes: 'Movie,Series',
-                SortBy: 'SortName',
-                SortOrder: 'Ascending',
-                Limit: 50
-            }).then(function (result) {
-                AllowMovieShowConfig.searchResults = result?.Items || [];
-                AllowMovieShowConfig.renderSearchResults();
-                Dashboard.hideLoadingMsg();
-            }).catch(function () {
-                Dashboard.hideLoadingMsg();
-            });
+            AllowMovieShowConfig.allMovies = movieResult?.Items || [];
+            AllowMovieShowConfig.allShows = showResult?.Items || [];
         },
 
-        renderSearchResults: function () {
-            const container = document.getElementById('searchResultsContainer');
+        renderAllMediaSections: function () {
+            AllowMovieShowConfig.renderMediaList('movieItemsContainer', AllowMovieShowConfig.allMovies);
+            AllowMovieShowConfig.renderMediaList('showItemsContainer', AllowMovieShowConfig.allShows);
+        },
+
+        renderMediaList: function (containerId, items) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
 
-            if (AllowMovieShowConfig.searchResults.length === 0) {
-                container.innerHTML = '<div class="fieldDescription">No results.</div>';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="fieldDescription">No items found.</div>';
                 return;
             }
 
-            for (const item of AllowMovieShowConfig.searchResults) {
+            for (const item of items) {
                 const isSelected = AllowMovieShowConfig.selectedHiddenItems.some(x => x.Id === item.Id);
                 const row = document.createElement('label');
                 row.className = 'checkboxContainer';
+                row.style.marginBottom = '0.4em';
 
                 row.innerHTML = `
                     <input type="checkbox" is="emby-checkbox" ${isSelected ? 'checked' : ''} data-itemid="${item.Id}" />
-                    <span>${item.Name} (${item.Type})</span>
+                    <span>${item.Name}</span>
                 `;
 
                 row.querySelector('input').addEventListener('change', function (event) {
@@ -112,30 +112,6 @@ export default function (view) {
             }
         },
 
-        renderSelectedItems: function () {
-            const container = document.getElementById('selectedItemsContainer');
-            container.innerHTML = '';
-
-            if (AllowMovieShowConfig.selectedHiddenItems.length === 0) {
-                container.innerHTML = '<div class="fieldDescription">No hidden items for this user.</div>';
-                return;
-            }
-
-            for (const item of AllowMovieShowConfig.selectedHiddenItems) {
-                const row = document.createElement('div');
-                row.style.marginBottom = '0.6em';
-                row.innerHTML = `
-                    <span>${item.Name} (${item.Type})</span>
-                    <button type="button" is="emby-button" class="raised emby-button" style="margin-left: 1em;">Remove</button>
-                `;
-                row.querySelector('button').addEventListener('click', function () {
-                    AllowMovieShowConfig.removeSelectedItem(item.Id);
-                    AllowMovieShowConfig.renderSearchResults();
-                });
-                container.appendChild(row);
-            }
-        },
-
         addSelectedItem: function (item) {
             if (AllowMovieShowConfig.selectedHiddenItems.some(x => x.Id === item.Id)) {
                 return;
@@ -146,12 +122,12 @@ export default function (view) {
                 Name: item.Name,
                 Type: item.Type
             });
-            AllowMovieShowConfig.renderSelectedItems();
+            AllowMovieShowConfig.renderAllMediaSections();
         },
 
         removeSelectedItem: function (itemId) {
             AllowMovieShowConfig.selectedHiddenItems = AllowMovieShowConfig.selectedHiddenItems.filter(x => x.Id !== itemId);
-            AllowMovieShowConfig.renderSelectedItems();
+            AllowMovieShowConfig.renderAllMediaSections();
         },
 
         resolveHiddenItems: async function (itemIds) {

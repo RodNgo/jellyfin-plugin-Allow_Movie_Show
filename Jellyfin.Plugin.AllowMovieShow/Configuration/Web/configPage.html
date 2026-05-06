@@ -18,25 +18,17 @@
                     </div>
                 </div>
 
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="searchKeyword">Search Movie/Series</label>
-                    <input id="searchKeyword" type="text" is="emby-input" placeholder="Example: Inception, Breaking Bad" />
-                    <div class="fieldDescription">Search only Movie and Series items.</div>
+                <div class="sectionTitleContainer flex align-items-center" style="margin-top: 1.5em;">
+                    <h3>Movies</h3>
                 </div>
-
-                <div>
-                    <button id="searchButton" is="emby-button" type="button" class="raised emby-button">
-                        <span>Search</span>
-                    </button>
-                </div>
-
-                <div id="searchResultsContainer" style="margin-top: 1em;"></div>
+                <div class="fieldDescription">Tick movie items that should be hidden for selected user.</div>
+                <div id="movieItemsContainer" style="margin-top: 0.8em;"></div>
 
                 <div class="sectionTitleContainer flex align-items-center" style="margin-top: 1.5em;">
-                    <h3>Hidden items for selected user</h3>
+                    <h3>Shows</h3>
                 </div>
-
-                <div id="selectedItemsContainer"></div>
+                <div class="fieldDescription">Tick show items that should be hidden for selected user.</div>
+                <div id="showItemsContainer" style="margin-top: 0.8em;"></div>
 
                 <div>
                     <button id="saveButton" is="emby-button" type="submit" class="raised block emby-button">
