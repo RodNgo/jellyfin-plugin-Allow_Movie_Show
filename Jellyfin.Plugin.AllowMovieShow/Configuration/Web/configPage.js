@@ -2,6 +2,7 @@ export default function (view) {
     const AllowMovieShowConfig = {
         pluginUniqueId: '4ce5e570-aeba-4218-a0f8-741cd5701ec6',
         selectedHiddenItems: [],
+        selectedToUnhideItemIds: [],
         allMovies: [],
         allShows: [],
 
@@ -45,7 +46,9 @@ export default function (view) {
                 const hiddenItemIds = userConfig?.HiddenItemIds || [];
 
                 AllowMovieShowConfig.selectedHiddenItems = await AllowMovieShowConfig.resolveHiddenItems(hiddenItemIds);
+                AllowMovieShowConfig.selectedToUnhideItemIds = [];
                 await AllowMovieShowConfig.loadAllMedia();
+                AllowMovieShowConfig.renderHiddenItemsSection();
                 AllowMovieShowConfig.renderAllMediaSections();
             } finally {
                 Dashboard.hideLoadingMsg();
@@ -78,6 +81,40 @@ export default function (view) {
         renderAllMediaSections: function () {
             AllowMovieShowConfig.renderMediaList('movieItemsContainer', AllowMovieShowConfig.allMovies);
             AllowMovieShowConfig.renderMediaList('showItemsContainer', AllowMovieShowConfig.allShows);
+        },
+
+        renderHiddenItemsSection: function () {
+            const container = document.getElementById('hiddenItemsContainer');
+            container.innerHTML = '';
+
+            if (!AllowMovieShowConfig.selectedHiddenItems || AllowMovieShowConfig.selectedHiddenItems.length === 0) {
+                container.innerHTML = '<div class="fieldDescription">No hidden items for this user.</div>';
+                return;
+            }
+
+            for (const item of AllowMovieShowConfig.selectedHiddenItems) {
+                const row = document.createElement('label');
+                row.className = 'checkboxContainer';
+                row.style.marginBottom = '0.4em';
+                const isSelectedToUnhide = AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id);
+
+                row.innerHTML = `
+                    <input type="checkbox" is="emby-checkbox" ${isSelectedToUnhide ? 'checked' : ''} data-itemid="${item.Id}" />
+                    <span>${item.Name} (${item.Type})</span>
+                `;
+
+                row.querySelector('input').addEventListener('change', function (event) {
+                    if (event.target.checked) {
+                        if (!AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id)) {
+                            AllowMovieShowConfig.selectedToUnhideItemIds.push(item.Id);
+                        }
+                    } else {
+                        AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== item.Id);
+                    }
+                });
+
+                container.appendChild(row);
+            }
         },
 
         renderMediaList: function (containerId, items) {
@@ -122,11 +159,15 @@ export default function (view) {
                 Name: item.Name,
                 Type: item.Type
             });
+            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== item.Id);
+            AllowMovieShowConfig.renderHiddenItemsSection();
             AllowMovieShowConfig.renderAllMediaSections();
         },
 
         removeSelectedItem: function (itemId) {
             AllowMovieShowConfig.selectedHiddenItems = AllowMovieShowConfig.selectedHiddenItems.filter(x => x.Id !== itemId);
+            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== itemId);
+            AllowMovieShowConfig.renderHiddenItemsSection();
             AllowMovieShowConfig.renderAllMediaSections();
         },
 
@@ -172,7 +213,9 @@ export default function (view) {
                 const selectedUserId = AllowMovieShowConfig.user.getSelectedUserId();
                 const selectedUserName = AllowMovieShowConfig.user.getSelectedUserName();
                 const userConfig = config.UserRules.find(x => x.UserId === selectedUserId);
-                const hiddenItemIds = AllowMovieShowConfig.selectedHiddenItems.map(x => x.Id);
+                const hiddenItemIds = AllowMovieShowConfig.selectedHiddenItems
+                    .map(x => x.Id)
+                    .filter(id => !AllowMovieShowConfig.selectedToUnhideItemIds.includes(id));
 
                 if (userConfig) {
                     userConfig.HiddenItemIds = hiddenItemIds;
