@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>Jellyfin.Plugin.AllowMovieShow</AssemblyName>
+    <RootNamespace>Jellyfin.Plugin.AllowMovieShow</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="10.*-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Configuration/Web/configPage.html" />
+    <EmbeddedResource Include="Configuration/Web/configPage.html" />
+    <None Remove="Configuration/Web/configPage.js" />
+    <EmbeddedResource Include="Configuration/Web/configPage.js" />
+  </ItemGroup>
+</Project>

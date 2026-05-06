@@ -1,0 +1,54 @@
+<div id="AllowMovieShowConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+    data-require="emby-input,emby-button,emby-select,emby-checkbox" data-controller="__plugin/Allow Movie Show.js">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="AllowMovieShowConfigForm">
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnablePlugin" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Plugin</span>
+                    </label>
+                </div>
+
+                <div class="inputContainer">
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="userToConfigure">User</label>
+                        <select id="userToConfigure" class="emby-select-withcolor emby-select"></select>
+                        <div class="fieldDescription">Choose user that will have specific movies/series hidden.</div>
+                    </div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="searchKeyword">Search Movie/Series</label>
+                    <input id="searchKeyword" type="text" is="emby-input" placeholder="Example: Inception, Breaking Bad" />
+                    <div class="fieldDescription">Search only Movie and Series items.</div>
+                </div>
+
+                <div>
+                    <button id="searchButton" is="emby-button" type="button" class="raised emby-button">
+                        <span>Search</span>
+                    </button>
+                </div>
+
+                <div id="searchResultsContainer" style="margin-top: 1em;"></div>
+
+                <div class="sectionTitleContainer flex align-items-center" style="margin-top: 1.5em;">
+                    <h3>Hidden items for selected user</h3>
+                </div>
+
+                <div id="selectedItemsContainer"></div>
+
+                <div>
+                    <button id="saveButton" is="emby-button" type="submit" class="raised block emby-button">
+                        <span>Save</span>
+                    </button>
+                </div>
+                <div style="margin-top: 0.8em;">
+                    <button id="applyNowButton" is="emby-button" type="button" class="raised block emby-button">
+                        <span>Apply now (no restart)</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
