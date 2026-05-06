@@ -7,7 +7,7 @@ This plugin is inspired by the project structure used in [jellyfin-plugin-Telegr
 ## What this plugin does
 
 - Adds a plugin configuration page in Jellyfin admin dashboard.
-- Lets admin choose a user, browse **Movies** and **Shows** in **paged lists** (150 items per page for large libraries), and tick items to hide.
+- Lets admin choose a user, browse **Movies** and **Shows** in **paged lists** (10 items per page for large libraries), and tick items to hide.
 - Shows **library / collection name** next to each title (and in the **Hidden items** section) where Jellyfin exposes a `CollectionFolder` or `UserView` parent.
 - Keeps folder permissions as-is, then blocks selected items per user via Jellyfin tag policy (`BlockedTags`).
 - Supports per-user hidden list (`HiddenItemIds` + `HiddenItems` metadata) so each user can have a different visible catalog.

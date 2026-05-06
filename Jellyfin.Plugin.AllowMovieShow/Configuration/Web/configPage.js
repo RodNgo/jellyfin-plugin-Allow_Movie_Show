@@ -1,7 +1,7 @@
 export default function (view) {
     const AllowMovieShowConfig = {
         pluginUniqueId: '4ce5e570-aeba-4218-a0f8-741cd5701ec6',
-        pageSize: 150,
+        pageSize: 10,
         moviePageIndex: 0,
         showPageIndex: 0,
         movieTotalRecordCount: undefined,

@@ -4,8 +4,8 @@
 
 - DLL: `dist/Jellyfin.Plugin.AllowMovieShow.dll`
 - ZIP (upload this to release): `release/Jellyfin.Plugin.AllowMovieShow_1.0.4.0.zip`
-- MD5 (manifest checksum): `e6431ca5901fd32f13cc637ec6acf9a1`
-- SHA256 (reference): `f8d748ee41ccb47f293483f815c633059e22408576d3dc9539e7d9a9c9abaf1f`
+- MD5 (manifest checksum): `104fafa01fdb51517d6bc517c15bcf7c`
+- SHA256 (reference): `e1d3dfb6605eeec3303e51f3216b0b102d93fd4e6d9ae5cc9ba7702bb944b7be`
 
 ## Manifest updated
 
