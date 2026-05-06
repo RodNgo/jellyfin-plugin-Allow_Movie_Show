@@ -46,7 +46,7 @@ public class AllowMovieShowController : ControllerBase
         var results = new List<ItemLookupResult>();
         foreach (var id in ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            if (!Guid.TryParse(id, out var guid))
+            if (!TryParseItemId(id, out var guid))
             {
                 continue;
             }
@@ -65,7 +65,7 @@ public class AllowMovieShowController : ControllerBase
 
             results.Add(new ItemLookupResult
             {
-                Id = item.Id.ToString(),
+                Id = item.Id.ToString("N"),
                 Name = item.Name,
                 Type = type
             });
@@ -73,6 +73,23 @@ public class AllowMovieShowController : ControllerBase
 
         _logger.LogDebug("Resolved {Count} item(s).", results.Count);
         return Ok(results);
+    }
+
+    private static bool TryParseItemId(string id, out Guid guid)
+    {
+        if (Guid.TryParse(id, out guid))
+        {
+            return true;
+        }
+
+        var compact = id.Replace("-", string.Empty, StringComparison.Ordinal);
+        if (compact.Length == 32 && Guid.TryParseExact(compact, "N", out guid))
+        {
+            return true;
+        }
+
+        guid = default;
+        return false;
     }
 }
 

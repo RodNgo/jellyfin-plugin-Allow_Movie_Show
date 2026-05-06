@@ -8,12 +8,12 @@
     "category": "General",
     "versions": [
       {
-        "version": "1.0.3.1",
-        "changelog": "Persist hidden item metadata (name/type) so Hidden Items section always shows real media names instead of Unknown entries.",
+        "version": "1.0.3.2",
+        "changelog": "Fix Hidden Items showing Unknown: normalize Jellyfin item IDs (dashed vs compact) when resolving names; refresh stale labels on load.",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/RodNgo/jellyfin-plugin-Allow_Movie_Show/releases/download/v1.0.3.1/Jellyfin.Plugin.AllowMovieShow_1.0.3.1.zip",
-        "checksum": "d1f4af2be2ffdd31a6a517ffeacd30d7",
-        "timestamp": "2026-05-06T17:33:00Z"
+        "sourceUrl": "https://github.com/RodNgo/jellyfin-plugin-Allow_Movie_Show/releases/download/v1.0.3.2/Jellyfin.Plugin.AllowMovieShow_1.0.3.2.zip",
+        "checksum": "672ed97e61ec540819468c36c2fb8b88",
+        "timestamp": "2026-05-06T17:40:00Z"
       }
     ]
   }

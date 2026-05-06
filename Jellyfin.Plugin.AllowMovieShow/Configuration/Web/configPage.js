@@ -6,6 +6,18 @@ export default function (view) {
         allMovies: [],
         allShows: [],
 
+        normalizeId: function (id) {
+            if (!id) {
+                return '';
+            }
+
+            return String(id).replace(/-/g, '').toLowerCase();
+        },
+
+        idsEqual: function (a, b) {
+            return AllowMovieShowConfig.normalizeId(a) === AllowMovieShowConfig.normalizeId(b);
+        },
+
         user: {
             loadUsers: async function () {
                 const users = await window.ApiClient.getUsers();
@@ -54,6 +66,8 @@ export default function (view) {
                 } else {
                     AllowMovieShowConfig.selectedHiddenItems = await AllowMovieShowConfig.resolveHiddenItems(hiddenItemIds);
                 }
+
+                await AllowMovieShowConfig.refreshUnknownHiddenNames();
                 AllowMovieShowConfig.selectedToUnhideItemIds = [];
                 await AllowMovieShowConfig.loadAllMedia();
                 AllowMovieShowConfig.renderHiddenItemsSection();
@@ -91,6 +105,26 @@ export default function (view) {
             AllowMovieShowConfig.renderMediaList('showItemsContainer', AllowMovieShowConfig.allShows);
         },
 
+        refreshUnknownHiddenNames: async function () {
+            const stale = AllowMovieShowConfig.selectedHiddenItems.filter(
+                x => !x.Name || x.Name.startsWith('Unknown item') || !x.Type || x.Type === 'Unknown'
+            );
+            if (stale.length === 0) {
+                return;
+            }
+
+            const resolved = await AllowMovieShowConfig.resolveHiddenItems(stale.map(x => x.Id));
+            const map = new Map(resolved.map(x => [AllowMovieShowConfig.normalizeId(x.Id), x]));
+            for (const item of AllowMovieShowConfig.selectedHiddenItems) {
+                const r = map.get(AllowMovieShowConfig.normalizeId(item.Id));
+                if (r && r.Name && !r.Name.startsWith('Unknown')) {
+                    item.Name = r.Name;
+                    item.Type = r.Type;
+                    item.Id = r.Id;
+                }
+            }
+        },
+
         renderHiddenItemsSection: function () {
             const container = document.getElementById('hiddenItemsContainer');
             container.innerHTML = '';
@@ -104,7 +138,9 @@ export default function (view) {
                 const row = document.createElement('label');
                 row.className = 'checkboxContainer';
                 row.style.marginBottom = '0.4em';
-                const isSelectedToUnhide = AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id);
+                const isSelectedToUnhide = AllowMovieShowConfig.selectedToUnhideItemIds.some(
+                    x => AllowMovieShowConfig.idsEqual(x, item.Id)
+                );
 
                 row.innerHTML = `
                     <input type="checkbox" is="emby-checkbox" ${isSelectedToUnhide ? 'checked' : ''} data-itemid="${item.Id}" />
@@ -113,11 +149,13 @@ export default function (view) {
 
                 row.querySelector('input').addEventListener('change', function (event) {
                     if (event.target.checked) {
-                        if (!AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id)) {
-                            AllowMovieShowConfig.selectedToUnhideItemIds.push(item.Id);
+                        if (!AllowMovieShowConfig.selectedToUnhideItemIds.some(x => AllowMovieShowConfig.idsEqual(x, item.Id))) {
+                            AllowMovieShowConfig.selectedToUnhideItemIds.push(AllowMovieShowConfig.normalizeId(item.Id));
                         }
                     } else {
-                        AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== item.Id);
+                        AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(
+                            x => !AllowMovieShowConfig.idsEqual(x, item.Id)
+                        );
                     }
                 });
 
@@ -135,7 +173,7 @@ export default function (view) {
             }
 
             for (const item of items) {
-                const isSelected = AllowMovieShowConfig.selectedHiddenItems.some(x => x.Id === item.Id);
+                const isSelected = AllowMovieShowConfig.selectedHiddenItems.some(x => AllowMovieShowConfig.idsEqual(x.Id, item.Id));
                 const row = document.createElement('label');
                 row.className = 'checkboxContainer';
                 row.style.marginBottom = '0.4em';
@@ -158,7 +196,7 @@ export default function (view) {
         },
 
         addSelectedItem: function (item) {
-            if (AllowMovieShowConfig.selectedHiddenItems.some(x => x.Id === item.Id)) {
+            if (AllowMovieShowConfig.selectedHiddenItems.some(x => AllowMovieShowConfig.idsEqual(x.Id, item.Id))) {
                 return;
             }
 
@@ -167,14 +205,20 @@ export default function (view) {
                 Name: item.Name,
                 Type: item.Type
             });
-            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== item.Id);
+            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(
+                x => !AllowMovieShowConfig.idsEqual(x, item.Id)
+            );
             AllowMovieShowConfig.renderHiddenItemsSection();
             AllowMovieShowConfig.renderAllMediaSections();
         },
 
         removeSelectedItem: function (itemId) {
-            AllowMovieShowConfig.selectedHiddenItems = AllowMovieShowConfig.selectedHiddenItems.filter(x => x.Id !== itemId);
-            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(x => x !== itemId);
+            AllowMovieShowConfig.selectedHiddenItems = AllowMovieShowConfig.selectedHiddenItems.filter(
+                x => !AllowMovieShowConfig.idsEqual(x.Id, itemId)
+            );
+            AllowMovieShowConfig.selectedToUnhideItemIds = AllowMovieShowConfig.selectedToUnhideItemIds.filter(
+                x => !AllowMovieShowConfig.idsEqual(x, itemId)
+            );
             AllowMovieShowConfig.renderHiddenItemsSection();
             AllowMovieShowConfig.renderAllMediaSections();
         },
@@ -195,17 +239,23 @@ export default function (view) {
                 }
 
                 const resolvedItems = await response.json();
-                const resolvedMap = new Map((resolvedItems || []).map(x => [x.Id, x]));
+                const resolvedMap = new Map(
+                    (resolvedItems || []).map(x => [AllowMovieShowConfig.normalizeId(x.Id), x])
+                );
                 return normalizedIds.map(id => {
-                    const resolved = resolvedMap.get(id);
+                    const resolved = resolvedMap.get(AllowMovieShowConfig.normalizeId(id));
                     if (resolved) {
                         return { Id: resolved.Id, Name: resolved.Name, Type: resolved.Type };
                     }
 
-                    return { Id: id, Name: `Unknown item (${id})`, Type: 'Unknown' };
+                    return { Id: AllowMovieShowConfig.normalizeId(id), Name: `Unknown item (${id})`, Type: 'Unknown' };
                 });
             } catch (error) {
-                return normalizedIds.map(id => ({ Id: id, Name: `Unknown item (${id})`, Type: 'Unknown' }));
+                return normalizedIds.map(id => ({
+                    Id: AllowMovieShowConfig.normalizeId(id),
+                    Name: `Unknown item (${id})`,
+                    Type: 'Unknown'
+                }));
             }
         },
 
@@ -222,7 +272,9 @@ export default function (view) {
                 const selectedUserName = AllowMovieShowConfig.user.getSelectedUserName();
                 const userConfig = config.UserRules.find(x => x.UserId === selectedUserId);
                 const hiddenItems = AllowMovieShowConfig.selectedHiddenItems
-                    .filter(item => !AllowMovieShowConfig.selectedToUnhideItemIds.includes(item.Id))
+                    .filter(
+                        item => !AllowMovieShowConfig.selectedToUnhideItemIds.some(u => AllowMovieShowConfig.idsEqual(u, item.Id))
+                    )
                     .map(item => ({
                         ItemId: item.Id,
                         Name: item.Name,
